@@ -1,0 +1,131 @@
+<!-- app/coffeeshop/templates/checkout.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Coffetime</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'coffee-yellow': '#FED728',
+                        'coffee-gray': '#E3E8EF',
+                        'coffee-black': '#0D121C',
+                        'coffee-purple': '#7A5AF8',
+                        'coffee-purple-light': '#EBE9FE'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .checkout-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .checkout-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-white text-coffee-black">
+    <div class="min-h-screen p-4 pt-8">
+        <div class="max-w-md mx-auto">
+            <!-- Header -->
+            <div class="flex items-center mb-6">
+                <button hx-get="/"
+                        hx-target="body"
+                        hx-push-url="true"
+                        class="mr-4 p-2 rounded-lg hover:bg-coffee-gray transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <h1 class="text-2xl font-bold">Checkout</h1>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="liquid-glass rounded-3xl p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+                <div class="space-y-3 mb-4">
+                    {% for item in cart.items %}
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-medium">{{ item.product_name }}</span>
+                            <span class="text-sm text-gray-600 block">{{ item.size_name }} × {{ item.quantity }}</span>
+                        </div>
+                        <span class="font-semibold">${{ "%.2f"|format(item.total_price) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span>Total:</span>
+                        <span>${{ "%.2f"|format(cart.total_amount) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkout Form -->
+            <form hx-post="/orders"
+                  hx-target="body"
+                  hx-push-url="true"
+                  class="space-y-6">
+                <div class="liquid-glass rounded-3xl p-6">
+                    <h2 class="text-lg font-semibold mb-4">Order Details</h2>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Your Name</label>
+                        <input type="text"
+                               name="customer_name"
+                               required
+                               placeholder="Enter your name"
+                               class="w-full p-3 bg-coffee-gray rounded-2xl border-none outline-none focus:bg-white focus:shadow-lg transition-all duration-300">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium mb-2">Ready Time</label>
+                        <input type="time"
+                               name="ready_time"
+                               required
+                               class="w-full p-3 bg-coffee-gray rounded-2xl border-none outline-none focus:bg-white focus:shadow-lg transition-all duration-300">
+                    </div>
+
+                    <button type="submit"
+                            class="checkout-btn w-full bg-coffee-black text-white py-4 rounded-2xl font-medium text-lg relative z-10">
+                        Place Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

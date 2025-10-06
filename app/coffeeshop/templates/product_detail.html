@@ -1,0 +1,290 @@
+<!-- app/coffeeshop/templates/product_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - Coffetime</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'coffee-yellow': '#FED728',
+                        'coffee-gray': '#E3E8EF',
+                        'coffee-black': '#0D121C',
+                        'coffee-purple': '#7A5AF8',
+                        'coffee-purple-light': '#EBE9FE'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .product-image {
+            background: linear-gradient(135deg, #EBE9FE 0%, #FED728 100%);
+        }
+
+        .size-btn {
+            transition: all 0.3s ease;
+            transform: translateZ(0);
+        }
+
+        .size-btn:hover:not(:disabled) {
+            background: #0D121C !important;
+            color: white !important;
+            transform: scale(1.02);
+        }
+
+        .size-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .notification.hide {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-20px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-white text-coffee-black">
+    <div id="notification" class="notification liquid-glass rounded-2xl px-6 py-3 hide" style="opacity: 0;">
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span class="font-medium">Added to cart!</span>
+        </div>
+    </div>
+
+    <div class="min-h-screen">
+        <div class="flex items-center p-4 pt-12 mb-6">
+            <button hx-get="/"
+                    hx-target="body"
+                    hx-push-url="true"
+                    class="mr-4 p-2 rounded-lg hover:bg-coffee-gray transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+            </button>
+            <h1 class="text-xl font-semibold">Product Details</h1>
+        </div>
+
+        <div class="px-4">
+            <div class="product-image rounded-3xl mb-6 h-80 overflow-hidden relative fade-in-up">
+                {% if product.image_path %}
+                    <img src="{{ product.image_path }}" alt="{{ product.name }}"
+                         class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center">
+                        <div class="w-32 h-32 bg-coffee-black rounded-3xl flex items-center justify-center">
+                            <svg class="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 718.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4 fade-in-up">
+                <h2 class="text-3xl font-bold">{{ product.name }}</h2>
+                <p class="text-lg text-gray-600">{{ product.category.name }}</p>
+            </div>
+
+            {% if product.description %}
+            <div class="mb-8 fade-in-up">
+                <h3 class="text-lg font-semibold mb-2">Description</h3>
+                <p class="text-gray-600 leading-relaxed">{{ product.description }}</p>
+            </div>
+            {% endif %}
+
+            {% if product.product_sizes %}
+            <div class="mb-8 fade-in-up">
+                <h3 class="text-lg font-semibold mb-4">Select Size & Add to Cart</h3>
+                <div class="grid grid-cols-1 gap-3">
+                    {% for size in product.product_sizes %}
+                    <button onclick="addToCartWithSize({{ size.id }})"
+                            class="size-btn p-4 bg-coffee-gray rounded-2xl flex justify-between items-center transition-all duration-300"
+                            id="size-btn-{{ size.id }}">
+                        <div class="text-left">
+                            <div class="font-semibold">{{ size.size.name }}</div>
+                            <div class="text-sm text-gray-600">{{ size.size.volume }}{{ size.size.unit }}</div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="font-bold text-lg">${{ "%.2f"|format(size.price) }}</div>
+                            <div class="loading-spinner w-5 h-5" style="display: none;">
+                                <svg class="w-5 h-5 text-gray-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+                            <svg class="cart-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15"></path>
+                            </svg>
+                        </div>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="pb-8 fade-in-up">
+                <button disabled class="w-full bg-gray-400 text-white py-4 rounded-2xl font-semibold text-lg cursor-not-allowed">
+                    Not Available
+                </button>
+            </div>
+            {% endif %}
+
+            <div class="pb-8">
+                <button onclick="goToCatalog()"
+                        class="w-full bg-coffee-black text-white py-4 rounded-2xl font-semibold text-lg transition-all hover:bg-gray-800">
+                    Back to Catalog
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAddingToCart = false;
+
+        function goBack() {
+            if (window.history.length > 1 && document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        function goToCatalog() {
+            window.location.href = '/';
+        }
+
+        function showNotification() {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.style.opacity = '1';
+                notification.classList.remove('hide');
+                notification.classList.add('show');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    notification.classList.add('hide');
+                    notification.style.opacity = '0';
+                }, 2000);
+            }
+        }
+
+        function setButtonsState(disabled) {
+            const buttons = document.querySelectorAll('.size-btn');
+            buttons.forEach(btn => {
+                btn.disabled = disabled;
+                if (disabled) {
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+
+                const spinner = btn.querySelector('.loading-spinner');
+                const icon = btn.querySelector('.cart-icon');
+
+                if (spinner && icon) {
+                    if (disabled) {
+                        spinner.style.display = 'block';
+                        icon.style.display = 'none';
+                    } else {
+                        spinner.style.display = 'none';
+                        icon.style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        async function addToCartWithSize(sizeId) {
+            if (isAddingToCart) return;
+
+            isAddingToCart = true;
+            setButtonsState(true);
+
+            try {
+                const response = await fetch('/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        product_size_id: sizeId,
+                        quantity: 1
+                    })
+                });
+
+                if (response.ok) {
+                    showNotification();
+
+                    const cartContent = document.getElementById('cart-content');
+                    if (cartContent) {
+                        const cartData = await response.text();
+                        cartContent.innerHTML = cartData;
+                    }
+
+                    document.dispatchEvent(new CustomEvent('cartUpdated'));
+                } else {
+                    throw new Error('Failed to add to cart');
+                }
+            } catch (error) {
+                alert('Failed to add to cart. Please try again.');
+            } finally {
+                isAddingToCart = false;
+                setButtonsState(false);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {});
+    </script>
+</body>
+</html>

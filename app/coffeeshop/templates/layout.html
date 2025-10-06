@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Coffetime - Coffee Shop PWA</title>
+
+    <!-- PWA Primary Meta Tags -->
+    <meta name="title" content="Coffetime - Coffee Shop">
+    <meta name="description" content="Order your favorite coffee with Coffetime PWA">
+    <meta name="application-name" content="Coffetime">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Coffetime">
+
+    <!-- Theme Colors -->
+    <meta name="theme-color" content="#FED728" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0D121C" media="(prefers-color-scheme: dark)">
+    <meta name="msapplication-TileColor" content="#FED728">
+    <meta name="msapplication-navbutton-color" content="#FED728">
+
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/static/images/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+    <link rel="apple-touch-startup-image" href="/static/images/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/images/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/images/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/images/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/images/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/images/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/images/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/images/apple-touch-icon-57x57.png">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16x16.png">
+    <link rel="shortcut icon" href="/static/images/favicon.ico">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ocgstudio.website/">
+    <meta property="og:title" content="Coffetime - Coffee Shop">
+    <meta property="og:description" content="Order your favorite coffee with Coffetime PWA">
+    <meta property="og:image" content="https://ocgstudio.website/static/images/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://ocgstudio.website/">
+    <meta property="twitter:title" content="Coffetime - Coffee Shop">
+    <meta property="twitter:description" content="Order your favorite coffee with Coffetime PWA">
+    <meta property="twitter:image" content="https://ocgstudio.website/static/images/og-image.png">
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then((registration) => {
+                        setInterval(() => {
+                            registration.update();
+                        }, 60000);
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    if (confirm('New version available! Reload to update?')) {
+                                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('❌ Service Worker registration failed:', error);
+                    });
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
+                });
+            });
+        }
+        let lastTouchY = 0;
+        let preventPullToRefresh = false;
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            lastTouchY = e.touches[0].clientY;
+            preventPullToRefresh = window.pageYOffset === 0;
+        }, { passive: false });
+        document.addEventListener('touchmove', (e) => {
+            const touchY = e.touches[0].clientY;
+            const touchYDelta = touchY - lastTouchY;
+            lastTouchY = touchY;
+            if (preventPullToRefresh && touchYDelta > 0) {
+                e.preventDefault();
+                return;
+            }
+        }, { passive: false });
+        let deferredPrompt;
+        const installButton = document.getElementById('install-button');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (installButton) {
+                installButton.style.display = 'block';
+                installButton.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        deferredPrompt = null;
+                        installButton.style.display = 'none';
+                    }
+                });
+            }
+        });
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            if (installButton) {
+                installButton.style.display = 'none';
+            }
+        });
+        function isPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone === true ||
+                   document.referrer.includes('android-app://');
+        }
+        if (isPWA()) {
+            document.body.classList.add('pwa-mode');
+        }
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'coffee-yellow': '#FED728',
+                        'coffee-gray': '#E3E8EF',
+                        'coffee-black': '#0D121C',
+                        'coffee-purple': '#7A5AF8',
+                        'coffee-purple-light': '#EBE9FE'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+        .section {
+            overflow: hidden;
+            overscroll-behavior: contain;
+        }
+        body {
+            margin: 0;
+            padding: 0 !important;
+            height: 100%;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            overflow: hidden;
+            position: static;
+            width: 100%;
+            background-color: #ffffff;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
+        }
+        @supports (padding: max(0px)) {
+            body {
+                padding-top: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                padding-bottom: 0 !important;
+            }
+        }
+        .products-scroll-container {
+            flex: 1;
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            position: relative;
+            padding-bottom: 120px;
+            touch-action: pan-y !important;
+        }
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+        .pwa-mode {
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        *::-webkit-scrollbar {
+            display: none;
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .coffee-card {
+            background: linear-gradient(135deg, #EBE9FE 0%, #FED728 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .coffee-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .coffee-card-alt {
+            background: linear-gradient(135deg, #E3E8EF 0%, #7A5AF8 100%);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .coffee-card-alt:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .cart-item {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+        .nav-button {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            overflow: hidden;
+        }
+        .nav-button.active::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(13, 18, 28, 0.4) 0%, rgba(13, 18, 28, 0.2) 40%, rgba(13, 18, 28, 0.1) 60%, transparent 80%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: glowPulse 0.6s ease-out;
+            z-index: 0;
+        }
+        .category-btn {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateZ(0);
+            touch-action: pan-x;
+        }
+        .categories-container {
+            touch-action: pan-x;
+            -webkit-overflow-scrolling: touch;
+        }
+        .add-cart-btn {
+            transition: all 0.2s ease;
+        }
+        .add-cart-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .checkout-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .checkout-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .checkout-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            transition: all 0.3s ease;
+        }
+        @keyframes glowPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .bottom-nav {
+            width: fit-content;
+            margin: 0 auto;
+            padding: 8px;
+        }
+        .swipe-container {
+            touch-action: pan-y pan-x;
+            overscroll-behavior: contain;
+        }
+        .cart-badge {
+            animation: badge-pop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 2px 8px rgba(122, 90, 248, 0.4);
+        }
+        @keyframes badge-pop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .cart-badge.pulse {
+            animation: badge-pulse 0.6s ease-in-out;
+        }
+        @keyframes badge-pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
+        .cart-badge.bounce {
+            animation: badge-bounce 0.5s ease-in-out;
+        }
+        @keyframes badge-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            25% {
+                transform: translateY(-4px);
+            }
+            50% {
+                transform: translateY(0);
+            }
+            75% {
+                transform: translateY(-2px);
+            }
+        }
+        .cart-badge::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, #7A5AF8, #A78BFA, #7A5AF8);
+            border-radius: inherit;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            animation: badge-glow 2s ease-in-out infinite;
+        }
+        @keyframes badge-glow {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+        .nav-button.active .cart-badge {
+            background: linear-gradient(135deg, #7A5AF8 0%, #A78BFA 100%);
+            box-shadow: 0 4px 12px rgba(122, 90, 248, 0.6);
+        }
+        .nav-button:hover .cart-badge {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(122, 90, 248, 0.5);
+        }
+        .products-container {
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
+            overscroll-behavior-x: none;
+        }
+        .bottom-navigation-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            padding-bottom: 0 !important;
+            background: transparent;
+            pointer-events: none;
+            padding: 5px;
+        }
+        .bottom-navigation-wrapper > * {
+            pointer-events: all;
+        }
+        @supports (-webkit-touch-callout: none) {
+            html {
+                height: -webkit-fill-available;
+            }
+            body {
+                min-height: -webkit-fill-available;
+                height: -webkit-fill-available;
+            }
+            .bottom-navigation-wrapper {
+                padding-bottom: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-white text-coffee-black overflow-hidden h-screen">
+    <script type="application/json" id="products-data">{{ products|safe }}</script>
+    <script type="application/json" id="categories-data">{{ categories|safe }}</script>
+    <script type="application/json" id="cart-data">{{ cart|tojson }}</script>
+
+    <div x-data="coffeeApp()" class="h-full flex flex-col">
+
+        <!-- Size Selection Modal -->
+        <div x-show="showSizeModal"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+             style="display: none;"
+             @click="closeSizeModal()">
+            <div class="bg-white rounded-3xl p-6 max-w-sm w-full mx-4" @click.stop>
+                <h3 class="text-xl font-bold mb-4 text-center">Select Size</h3>
+                <div class="space-y-3" x-show="selectedProduct">
+                    <template x-for="size in selectedProduct?.product_sizes || []">
+                        <button @click="addToCartWithSize(size.id)"
+                                class="w-full p-4 bg-coffee-gray rounded-2xl hover:bg-coffee-black hover:text-white transition-all flex justify-between items-center">
+                            <div>
+                                <div class="font-medium" x-text="size.size.name"></div>
+                                <div class="text-sm text-gray-600" x-text="size.size.volume + size.size.unit"></div>
+                            </div>
+                            <div class="font-bold" x-text="'$' + size.price.toFixed(2)"></div>
+                        </button>
+                    </template>
+                </div>
+                <button @click="closeSizeModal()"
+                        class="w-full mt-4 p-3 bg-gray-200 rounded-2xl font-medium">
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div x-show="showNotification"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform -translate-y-4"
+             x-transition:enter-end="opacity-1 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-1 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform -translate-y-4"
+             class="notification liquid-glass rounded-2xl px-6 py-3">
+            <div class="flex items-center space-x-2 mt-4">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="font-medium">Added to cart!</span>
+            </div>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="flex-1 overflow-hidden relative">
+            <div class="swipe-container h-full flex transition-transform duration-300 ease-out"
+                 :style="`transform: translateX(-${currentSection * 100}%)`"
+                 @touchstart="handleTouchStart($event)"
+                 @touchmove="handleTouchMove($event)"
+                 @touchend="handleTouchEnd($event)">
+
+                <!-- Cart Section -->
+                <div class="section w-full h-full flex-shrink-0 p-4 pt-12 pb-0">
+                    <div class="h-full flex flex-col">
+                        <h1 class="text-3xl font-bold mb-2">Cart</h1>
+                        <p class="text-lg font-light text-gray-600 mb-6">Your Orders</p>
+
+                        <div id="cart-content" class="flex-1 flex flex-col overflow-hidden"
+                            hx-get="/cart"
+                            hx-trigger="cartUpdated from:body"
+                            hx-swap="innerHTML">
+                            {% if cart['items_count'] == 0 %}
+                                <div class="flex-1 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div class="w-24 h-24 mx-auto mb-4 bg-coffee-gray rounded-full flex items-center justify-center">
+                                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                            </svg>
+                                        </div>
+                                        <p class="text-gray-500">Your cart is empty</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- Cart Items -->
+                                <div class="flex-1 overflow-y-auto mb-4">
+                                    <div class="space-y-3" style="padding-bottom: 100px;">
+                                        {% for item in cart['items'] %}
+                                        <div class="cart-item rounded-2xl p-4 fade-in-up">
+                                            <div class="flex items-center space-x-3">
+                                                <!-- Product Image -->
+                                                <div class="w-12 h-12 rounded-xl overflow-hidden bg-coffee-purple flex-shrink-0">
+                                                    {% if item.image_path %}
+                                                        <img src="{{ item.image_path }}" alt="{{ item.product_name }}"
+                                                            class="w-full h-full object-cover">
+                                                    {% else %}
+                                                        <div class="w-full h-full bg-gradient-to-br from-coffee-purple-light to-coffee-purple flex items-center justify-center">
+                                                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 718.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+
+                                                <!-- Product Info -->
+                                                <div class="flex-1 min-w-0">
+                                                    <h3 class="font-semibold text-gray-900 truncate">{{ item.product_name }}</h3>
+                                                    <p class="text-sm text-gray-600">{{ item.size_name }}</p>
+                                                    <p class="text-sm font-medium text-coffee-purple">${{ "%.2f"|format(item.price) }} each</p>
+                                                </div>
+
+                                                <!-- Quantity Controls -->
+                                                <div class="flex items-center space-x-2">
+                                                    {% if item.quantity > 1 %}
+                                                        <form style="display: inline;" hx-put="/cart/update/{{ item.product_size_id }}" hx-target="#cart-content">
+                                                            <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
+                                                            <button type="submit" class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                                                </svg>
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <button hx-delete="/cart/remove/{{ item.product_size_id }}"
+                                                                hx-target="#cart-content"
+                                                                hx-trigger="click"
+                                                                class="w-8 h-8 rounded-lg bg-red-200 flex items-center justify-center hover:bg-red-300 transition-colors">
+                                                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
+                                                    {% endif %}
+
+                                                    <span class="font-medium w-8 text-center">{{ item.quantity }}</span>
+
+                                                    <form style="display: inline;" hx-put="/cart/update/{{ item.product_size_id }}" hx-target="#cart-content">
+                                                        <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
+                                                        <button type="submit" class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                </div>
+
+                                                <!-- Total Price -->
+                                                <div class="text-right">
+                                                    <div class="font-bold text-lg">${{ "%.2f"|format(item.total_price) }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Total Section -->
+                        <div id="cart-total-section" class="pb-28" style="display: {{ 'block' if cart['items_count'] > 0 else 'none' }};">
+                            <div class="liquid-glass rounded-3xl p-6">
+                                <div class="flex justify-between items-center mb-4">
+                                    <span class="text-lg font-medium">Total:</span>
+                                    <span class="text-2xl font-bold" id="cart-total-amount">${{ "%.2f"|format(cart['total_amount']) }}</span>
+                                </div>
+                                <button hx-get="/checkout"
+                                        hx-target="body"
+                                        hx-push-url="true"
+                                        class="checkout-btn w-full bg-coffee-black text-white py-4 rounded-2xl font-medium text-lg relative z-10">
+                                    Checkout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Catalog Section -->
+                <div class="section w-full h-full flex-shrink-0 p-4 pt-12 pb-0">
+                    <div class="h-full flex flex-col">
+                        <!-- Header -->
+                        <div class="mb-6 flex-shrink-0">
+                            <h1 class="text-3xl font-bold">Hello</h1>
+                            <p class="text-lg font-light text-gray-600">Coffetime?</p>
+                        </div>
+
+                        <!-- Search Bar -->
+                        <div class="mb-6 flex-shrink-0">
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <input type="text"
+                                        placeholder="Search..."
+                                        class="w-full pl-10 pr-4 py-3 bg-coffee-gray rounded-2xl border-none outline-none transition-all duration-300 focus:bg-white focus:shadow-lg"
+                                        x-model="searchQuery"
+                                        @input.debounce.300ms="filterProducts()">
+                            </div>
+                        </div>
+
+                        <!-- Category Filters -->
+                        <div class="mb-6 flex-shrink-0">
+                            <div class="categories-container flex gap-3 overflow-x-auto pb-2"
+                                    @touchstart.stop
+                                    @touchmove.stop
+                                    @touchend.stop>
+                                <template x-for="category in categories">
+                                    <button @click="setActiveCategory(category.slug)"
+                                            :class="activeCategory === category.slug ? 'bg-coffee-black text-white' : 'bg-coffee-gray text-coffee-black'"
+                                            class="category-btn px-6 py-3 rounded-2xl whitespace-nowrap font-medium hover:bg-coffee-black hover:text-white transition-all duration-300">
+                                        <span x-text="category.name"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Coffee Cards -->
+                        <div class="flex-1 products-container" style="overflow-y: auto;">
+                            <div class="products-container space-y-4" style="padding-bottom: 100px;">
+                                {% if error %}
+                                    <div class="text-center py-12">
+                                        <div class="w-24 h-24 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <p class="text-red-600">{{ error }}</p>
+                                    </div>
+                                {% endif %}
+
+                                <template x-for="(product, index) in filteredProducts" :key="product.id">
+                                    <div :class="index % 2 === 0 ? 'coffee-card' : 'coffee-card-alt'"
+                                            class="relative rounded-3xl p-6 h-80 overflow-hidden fade-in-up cursor-pointer"
+                                            @click="openProductDetail(product)">
+
+                                        <!-- Background Image Layer -->
+                                        <div x-show="product.image_path" class="absolute inset-0 z-1">
+                                            <img :src="product.image_path" :alt="product.name"
+                                                    class="w-full h-full object-cover">
+                                        </div>
+
+                                        <!-- Coffee Icon (if no image) -->
+                                        <div x-show="!product.image_path" class="absolute right-4 top-4 w-32 h-32 z-1">
+                                            <div class="w-full h-full bg-coffee-black rounded-2xl flex items-center justify-center">
+                                                <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 718.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        <!-- Coffee Info -->
+                                        <div class="relative z-10 coffee-card-content">
+                                            <h3 class="text-2xl font-bold mb-2 max-w-32" x-text="product.name"></h3>
+                                            <p class="text-sm text-gray-600 max-w-32" x-text="product.description"></p>
+                                        </div>
+
+                                        <!-- Bottom Bar -->
+                                        <div class="absolute bottom-4 left-4 right-4 z-10">
+                                            <div class="liquid-glass rounded-2xl p-4 flex items-center justify-between">
+                                                <div class="flex flex-col">
+                                                    <span class="text-xl font-bold" x-text="' + product.min_price.toFixed(2) + (product.min_price !== product.max_price ? ' -  + product.max_price.toFixed(2) : '')"></span>
+                                                    <span class="text-xs text-gray-600" x-show="product.product_sizes.length > 1" x-text="product.product_sizes.length + ' sizes'"></span>
+                                                </div>
+
+                                                <button x-show="product.product_sizes.length > 0"
+                                                        @click.stop="handleAddToCart(product)"
+                                                        class="add-cart-btn bg-coffee-black text-white w-12 h-12 rounded-2xl flex items-center justify-center">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <!-- No Products Message -->
+                                <div x-show="filteredProducts.length === 0" class="text-center py-12">
+                                    <div class="w-24 h-24 mx-auto mb-4 bg-coffee-gray rounded-full flex items-center justify-center">
+                                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-500">No products found</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div class="section w-full h-full flex-shrink-0 p-4 pt-12 pb-0">
+                    <div class="h-full flex flex-col">
+                        <h1 class="text-3xl font-bold mb-2">Profile</h1>
+                        <p class="text-lg font-light text-gray-600 mb-6">Your Account</p>
+
+                        <div class="flex-1 overflow-y-auto">
+                            <div class="bg-coffee-gray rounded-3xl p-6 mb-4 fade-in-up">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-16 h-16 bg-coffee-purple rounded-full flex items-center justify-center mr-4">
+                                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold">Coffee Lover</h3>
+                                        <p class="text-gray-600">coffee@example.com</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3 pb-24">
+                                <button class="w-full bg-coffee-gray rounded-2xl p-4 text-left flex items-center justify-between">
+                                    <span class="font-medium">Order History</span>
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                                <button class="w-full bg-coffee-gray rounded-2xl p-4 text-left flex items-center justify-between">
+                                    <span class="font-medium">Favorites</span>
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                                <button class="w-full bg-coffee-gray rounded-2xl p-4 text-left flex items-center justify-between">
+                                    <span class="font-medium">Settings</span>
+                                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation - БЕЗ ЛИШНИХ ОТСТУПОВ -->
+        <div class="bottom-navigation-wrapper">
+            <div class="flex justify-center">
+                <div class="bottom-nav liquid-glass rounded-2xl mb-4">
+                    <div class="flex items-center justify-center gap-2">
+                        <!-- Cart Button -->
+                        <button @click="setSection(0)"
+                                :class="currentSection === 0 ? 'active' : 'text-gray-600'"
+                                class="nav-button p-3 rounded-xl transition-all duration-300 flex items-center justify-center relative">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15"></path>
+                            </svg>
+                            <!-- Cart Badge -->
+                            <span x-show="cartItemCount > 0"
+                                    x-text="cartItemCount"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 scale-75"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-75"
+                                    class="cart-badge absolute -top-1 -right-1 bg-coffee-purple text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 shadow-lg"
+                                    id="cart-badge"></span>
+                        </button>
+
+                        <!-- Catalog Button -->
+                        <button @click="setSection(1)"
+                                :class="currentSection === 1 ? 'active' : 'text-gray-600'"
+                                class="nav-button p-3 rounded-xl transition-all duration-300 flex items-center justify-center relative">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Profile Button -->
+                        <button @click="setSection(2)"
+                                :class="currentSection === 2 ? 'active' : 'text-gray-600'"
+                                class="nav-button p-3 rounded-xl transition-all duration-300 flex items-center justify-center relative">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function coffeeApp() {
+            return {
+                currentSection: 1,
+                touchStartX: 0,
+                touchEndX: 0,
+                touchStartTime: 0,
+                touchEndTime: 0,
+                touchStartY: 0,
+                touchEndY: 0,
+                isSwiping: false,
+                isSwipingCategories: false,
+                searchQuery: '',
+                activeCategory: 'all',
+                cartItemCount: 0,
+                showSizeModal: false,
+                selectedProduct: null,
+                showNotification: false,
+
+                allProducts: [],
+                categories: [],
+                cartData: {},
+                filteredProducts: [],
+
+                init() {
+                    try {
+                        const productsEl = document.getElementById('products-data');
+                        const categoriesEl = document.getElementById('categories-data');
+                        const cartEl = document.getElementById('cart-data');
+
+                        if (productsEl && productsEl.textContent) {
+                            this.allProducts = JSON.parse(productsEl.textContent);
+                        }
+
+                        if (categoriesEl && categoriesEl.textContent) {
+                            this.categories = JSON.parse(categoriesEl.textContent);
+                        }
+
+                        if (cartEl && cartEl.textContent) {
+                            this.cartData = JSON.parse(cartEl.textContent);
+                            this.cartItemCount = this.cartData.items_count || 0;
+                        }
+
+                        console.log('Loaded products:', this.allProducts.length);
+                        console.log('Loaded categories:', this.categories.length);
+                        console.log('Cart items count:', this.cartItemCount);
+
+                        this.processProducts();
+                        this.filterProducts();
+                        this.updateCartCount();
+
+                        document.addEventListener('cartUpdated', () => {
+                            this.updateCartCount();
+                        });
+
+                    } catch (error) {
+                        console.error('Error initializing app:', error);
+                        this.allProducts = [];
+                        this.categories = [{name: 'All', slug: 'all'}];
+                        this.cartItemCount = 0;
+                        this.filteredProducts = [];
+                    }
+                },
+
+                updateCartCount() {
+                    fetch('/cart/count')
+                        .then(response => response.text())
+                        .then(html => {
+                            const badge = document.getElementById('cart-badge');
+                            if (badge) {
+                                const oldCount = this.cartItemCount;
+
+                                if (html.trim()) {
+                                    const match = html.match(/(\d+)/);
+                                    if (match) {
+                                        const newCount = parseInt(match[1]);
+
+                                        if (newCount !== oldCount) {
+                                            this.cartItemCount = newCount;
+                                            badge.textContent = newCount;
+                                            badge.style.display = 'flex';
+
+                                            badge.classList.remove('pulse', 'bounce');
+                                            void badge.offsetWidth;
+                                            badge.classList.add(newCount > oldCount ? 'pulse' : 'bounce');
+
+                                            setTimeout(() => {
+                                                badge.classList.remove('pulse', 'bounce');
+                                            }, 600);
+                                        }
+                                    }
+                                } else {
+                                    this.cartItemCount = 0;
+                                    badge.style.display = 'none';
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error updating cart count:', error);
+                        });
+                },
+
+                processProducts() {
+                    this.allProducts = this.allProducts.map(product => {
+                        if (product.product_sizes && product.product_sizes.length > 0) {
+                            const prices = product.product_sizes.map(ps => parseFloat(ps.price));
+                            return {
+                                ...product,
+                                min_price: Math.min(...prices),
+                                max_price: Math.max(...prices)
+                            };
+                        } else {
+                            return {
+                                ...product,
+                                min_price: 0,
+                                max_price: 0
+                            };
+                        }
+                    });
+                },
+
+                filterProducts() {
+                    let filtered = [...this.allProducts];
+
+                    if (this.activeCategory && this.activeCategory !== 'all') {
+                        filtered = filtered.filter(product =>
+                            product.category && product.category.slug === this.activeCategory
+                        );
+                    }
+
+                    if (this.searchQuery && this.searchQuery.trim()) {
+                        const query = this.searchQuery.toLowerCase();
+                        filtered = filtered.filter(product =>
+                            (product.name && product.name.toLowerCase().includes(query)) ||
+                            (product.description && product.description.toLowerCase().includes(query))
+                        );
+                    }
+
+                    this.filteredProducts = filtered;
+                },
+
+                setActiveCategory(slug) {
+                    this.activeCategory = slug;
+                    this.filterProducts();
+                },
+
+                setSection(section) {
+                    this.currentSection = section;
+                },
+
+                showSuccessNotification() {
+                    this.showNotification = true;
+                    setTimeout(() => {
+                        this.showNotification = false;
+                    }, 2000);
+                },
+
+                openProductDetail(product) {
+                    htmx.ajax('GET', `/product/${product.id}`, {
+                        target: 'body',
+                        swap: 'innerHTML'
+                    });
+                },
+
+                handleAddToCart(product) {
+                    console.log('[ALPINE] handleAddToCart called for product:', product.name);
+
+                    if (!product.product_sizes || product.product_sizes.length === 0) {
+                        console.warn('[ALPINE] No sizes available for product:', product.name);
+                        return;
+                    }
+
+                    if (product.product_sizes.length === 1) {
+                        console.log('[ALPINE] Single size, adding directly:', product.product_sizes[0].id);
+                        this.addToCart(product.product_sizes[0].id);
+                    } else {
+                        console.log('[ALPINE] Multiple sizes, showing modal');
+                        this.selectedProduct = product;
+                        this.showSizeModal = true;
+                    }
+                },
+
+                async addToCart(productSizeId) {
+                    try {
+                        console.log(`[CART] Adding product_size_id: ${productSizeId} via htmx.ajax`);
+
+                        htmx.ajax('POST', '/cart/add', {
+                            values: {
+                                product_size_id: productSizeId,
+                                quantity: 1
+                            },
+                            target: '#cart-content',
+                            swap: 'innerHTML'
+                        }).then(() => {
+                            console.log('[CART] ✅ htmx.ajax request completed');
+
+                            this.showSuccessNotification();
+
+                            setTimeout(() => {
+                                this.updateCartCount();
+                                document.dispatchEvent(new CustomEvent('cartUpdated'));
+                            }, 300);
+
+                        }).catch((error) => {
+                            console.error('[CART] ❌ htmx.ajax error:', error);
+                            alert('Failed to add to cart. Please try again.');
+                        });
+
+                    } catch (error) {
+                        console.error('[CART] ❌ Error in addToCart:', error);
+                        alert('Failed to add to cart. Please try again.');
+                    }
+                },
+
+                addToCartWithSize(productSizeId) {
+                    this.addToCart(productSizeId);
+                    this.closeSizeModal();
+                },
+
+                closeSizeModal() {
+                    this.showSizeModal = false;
+                    this.selectedProduct = null;
+                },
+
+                handleTouchStart(e) {
+                    const target = e.target;
+                    const categoriesContainer = target.closest('.categories-container');
+
+                    if (categoriesContainer) {
+                        this.isSwipingCategories = true;
+                        return;
+                    }
+
+                    this.touchStartX = e.touches[0].clientX;
+                    this.touchStartY = e.touches[0].clientY;
+                    this.touchStartTime = Date.now();
+                    this.isSwiping = false;
+                    this.isSwipingCategories = false;
+                },
+
+                handleTouchMove(e) {
+                    if (this.isSwipingCategories) {
+                        return;
+                    }
+
+                    this.touchEndX = e.touches[0].clientX;
+                    this.touchEndY = e.touches[0].clientY;
+
+                    const deltaX = Math.abs(this.touchEndX - this.touchStartX);
+                    const deltaY = Math.abs(this.touchEndY - this.touchStartY);
+
+                    if (deltaX > deltaY && deltaX > 10) {
+                        this.isSwiping = true;
+                    }
+                },
+
+                handleTouchEnd(e) {
+                    if (this.isSwipingCategories) {
+                        this.isSwipingCategories = false;
+                        return;
+                    }
+
+                    if (!this.isSwiping) {
+                        return;
+                    }
+
+                    this.touchEndTime = Date.now();
+                    const touchDuration = this.touchEndTime - this.touchStartTime;
+                    const threshold = 50;
+                    const maxDuration = 500;
+                    const diff = this.touchStartX - this.touchEndX;
+
+                    if (touchDuration < maxDuration && Math.abs(diff) > threshold) {
+                        if (diff > 0 && this.currentSection < 2) {
+                            this.currentSection++;
+                        } else if (diff < 0 && this.currentSection > 0) {
+                            this.currentSection--;
+                        }
+                    }
+
+                    this.isSwiping = false;
+                }
+            }
+        }
+
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            if (evt.detail.xhr.getResponseHeader('HX-Trigger')) {
+                const triggers = evt.detail.xhr.getResponseHeader('HX-Trigger').split(',');
+                triggers.forEach(trigger => {
+                    if (trigger.trim() === 'cartUpdated') {
+                        document.dispatchEvent(new CustomEvent('cartUpdated'));
+                    }
+                });
+            }
+        });
+
+        window.debugCart = function() {
+            console.log('Current cart state:');
+            console.log('Cookie:', document.cookie);
+            fetch('/cart/count').then(r => r.text()).then(html => {
+                console.log('Cart count HTML:', html);
+            });
+        };
+    </script>
+</body>
+</html>

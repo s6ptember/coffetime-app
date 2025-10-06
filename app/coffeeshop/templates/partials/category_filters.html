@@ -1,0 +1,27 @@
+<!-- app/coffeeshop/templates/partials/category_filters.html -->
+<div class="flex gap-3 overflow-x-auto pb-2">
+    {% for category in categories %}
+        <button hx-get="/catalog/category/{{ category.slug }}"
+                hx-target="#product-list"
+                hx-trigger="click"
+                class="category-btn px-6 py-3 rounded-2xl whitespace-nowrap font-medium bg-coffee-gray text-coffee-black hover:bg-coffee-black hover:text-white transition-all duration-300">
+            <span>{{ category.name }}</span>
+        </button>
+    {% endfor %}
+</div>
+
+<script>
+    document.addEventListener('htmx:beforeRequest', function(evt) {
+        if (evt.detail.target.id === 'product-list') {
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-coffee-black', 'text-white');
+                btn.classList.add('bg-coffee-gray', 'text-coffee-black');
+            });
+
+            if (evt.detail.elt.classList.contains('category-btn')) {
+                evt.detail.elt.classList.remove('bg-coffee-gray', 'text-coffee-black');
+                evt.detail.elt.classList.add('bg-coffee-black', 'text-white');
+            }
+        }
+    });
+</script>

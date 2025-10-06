@@ -1,0 +1,108 @@
+{% if cart.items_count == 0 %}
+    <div class="flex-1 flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-24 h-24 mx-auto mb-4 bg-coffee-gray rounded-full flex items-center justify-center">
+                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6"></path>
+                </svg>
+            </div>
+            <p class="text-gray-500">Your cart is empty</p>
+        </div>
+    </div>
+
+    <script>
+        const totalSection = document.getElementById('cart-total-section');
+        if (totalSection) {
+            totalSection.style.display = 'none';
+        }
+    </script>
+{% else %}
+    <div class="flex-1 overflow-y-auto mb-4">
+        <div class="space-y-3" style="padding-bottom: 100px;">
+            {% for item in cart.items %}
+            <div class="cart-item rounded-2xl p-4">
+                <div class="flex items-start space-x-3">
+                    <div class="w-12 h-12 rounded-xl overflow-hidden bg-coffee-purple flex-shrink-0">
+                        {% if item.image_path %}
+                            <img src="{{ item.image_path }}" alt="{{ item.product_name }}"
+                                 class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-gradient-to-br from-coffee-purple-light to-coffee-purple flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 718.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                                </svg>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <h3 class="font-semibold text-gray-900 truncate">{{ item.product_name }}</h3>
+                        <p class="text-sm text-gray-600">{{ item.size_name }}</p>
+                        <p class="text-sm font-medium text-coffee-purple">${{ "%.2f"|format(item.price) }} each</p>
+                    </div>
+
+                    <div class="flex flex-col items-end space-y-2">
+                        <div class="flex items-center space-x-2">
+                            {% if item.quantity > 1 %}
+                                <form style="display: inline;" hx-put="/cart/update/{{ item.product_size_id }}" hx-target="#cart-content" hx-swap="innerHTML">
+                                    <input type="hidden" name="quantity" value="{{ item.quantity - 1 }}">
+                                    <button type="submit" class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <button hx-delete="/cart/remove/{{ item.product_size_id }}"
+                                        hx-target="#cart-content"
+                                        hx-swap="innerHTML"
+                                        hx-trigger="click"
+                                        class="w-8 h-8 rounded-lg bg-red-200 flex items-center justify-center hover:bg-red-300 transition-colors">
+                                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            {% endif %}
+
+                            <span class="font-medium w-8 text-center">{{ item.quantity }}</span>
+
+                            <form style="display: inline;" hx-put="/cart/update/{{ item.product_size_id }}" hx-target="#cart-content" hx-swap="innerHTML">
+                                <input type="hidden" name="quantity" value="{{ item.quantity + 1 }}">
+                                <button type="submit" class="w-8 h-8 rounded-lg bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="font-bold text-lg whitespace-nowrap">${{ "%.2f"|format(item.total_price) }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        (function updateTotalSection() {
+            const totalSection = document.getElementById('cart-total-section');
+            const totalAmount = document.getElementById('cart-total-amount');
+
+            if (totalSection && totalAmount) {
+                totalSection.style.display = 'block';
+                totalAmount.textContent = '${{ "%.2f"|format(cart.total_amount) }}';
+            }
+        })();
+    </script>
+{% endif %}
+
+<style>
+.cart-item {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+}
+</style>

@@ -1,0 +1,121 @@
+<!-- app/coffeeshop/templates/partials/product_list.html -->
+<div class="space-y-4 pb-20">
+    {% for product in products %}
+    <div class="{% if loop.index % 2 == 1 %}coffee-card{% else %}coffee-card-alt{% endif %} relative rounded-3xl p-6 h-80 overflow-hidden fade-in-up">
+        <div class="absolute right-4 top-4 w-32 h-32">
+            {% if product.image_path %}
+                <img src="{{ product.image_path }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+            {% else %}
+                <div class="w-full h-full bg-coffee-black rounded-2xl flex items-center justify-center">
+                    <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 718.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="relative z-10">
+            <h3 class="text-2xl font-bold mb-2 max-w-32">{{ product.name }}</h3>
+            {% if product.description %}
+                <p class="text-sm text-gray-600 max-w-32">{{ product.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="absolute bottom-4 left-4 right-4">
+            <div class="liquid-glass rounded-2xl p-4 flex items-center justify-between">
+                <div class="flex flex-col">
+                    {% if product.product_sizes %}
+                        {% set min_price = product.product_sizes|map(attribute='price')|min %}
+                        {% set max_price = product.product_sizes|map(attribute='price')|max %}
+                        {% if min_price == max_price %}
+                            <span class="text-xl font-bold">${{ "%.2f"|format(min_price) }}</span>
+                        {% else %}
+                            <span class="text-xl font-bold">${{ "%.2f"|format(min_price) }} - ${{ "%.2f"|format(max_price) }}</span>
+                        {% endif %}
+                        {% if product.product_sizes|length > 1 %}
+                            <span class="text-xs text-gray-600">{{ product.product_sizes|length }} sizes</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="text-xl font-bold">$0.00</span>
+                    {% endif %}
+                </div>
+
+                {% if product.product_sizes %}
+                    {% if product.product_sizes|length > 1 %}
+                        <div x-data="{ showSizes: false, selectedSize: {{ product.product_sizes[0].id }}, selectedPrice: {{ product.product_sizes[0].price }} }" class="relative">
+                            <button @click="showSizes = !showSizes"
+                                    class="add-cart-btn bg-coffee-black text-white px-4 py-2 rounded-2xl flex items-center justify-center mr-2">
+                                <span x-text="'$' + selectedPrice.toFixed(2)" class="mr-2"></span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            <div x-show="showSizes"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                 x-transition:enter-end="opacity-1 transform scale-100"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-1 transform scale-100"
+                                 x-transition:leave-end="opacity-0 transform scale-95"
+                                 class="absolute bottom-full mb-2 right-0 bg-white rounded-2xl shadow-lg p-2 min-w-32 z-50"
+                                 @click.away="showSizes = false">
+                                {% for size in product.product_sizes %}
+                                    <button @click="selectedSize = {{ size.id }}; selectedPrice = {{ size.price }}; showSizes = false"
+                                            class="w-full text-left px-3 py-2 rounded-lg hover:bg-coffee-gray transition-colors">
+                                        <div class="font-medium">{{ size.size.name }}</div>
+                                        <div class="text-sm text-gray-600">${{ "%.2f"|format(size.price) }}</div>
+                                    </button>
+                                {% endfor %}
+                            </div>
+
+                            <button hx-post="/cart/add"
+                                    hx-vals="js:{product_size_id: selectedSize, quantity: 1}"
+                                    hx-target="#cart-content"
+                                    hx-trigger="click"
+                                    class="add-cart-btn bg-coffee-black text-white w-12 h-12 rounded-2xl flex items-center justify-center">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    {% else %}
+                        <button hx-post="/cart/add"
+                                hx-vals='{"product_size_id": {{ product.product_sizes[0].id }}, "quantity": 1}'
+                                hx-target="#cart-content"
+                                hx-trigger="click"
+                                class="add-cart-btn bg-coffee-black text-white w-12 h-12 rounded-2xl flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15"></path>
+                            </svg>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <button disabled class="bg-gray-400 text-white w-12 h-12 rounded-2xl flex items-center justify-center cursor-not-allowed">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636"></path>
+                        </svg>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% if not products %}
+        <div class="text-center py-12">
+            <div class="w-24 h-24 mx-auto mb-4 bg-coffee-gray rounded-full flex items-center justify-center">
+                <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <p class="text-gray-500">
+                {% if search_query %}
+                    No products found for "{{ search_query }}"
+                {% else %}
+                    No products available
+                {% endif %}
+            </p>
+        </div>
+    {% endif %}
+</div>
